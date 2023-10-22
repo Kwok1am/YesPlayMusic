@@ -2,14 +2,17 @@ export function lyricParser(lrc) {
   return {
     lyric: parseLyric(lrc?.lrc?.lyric || ''),
     tlyric: parseLyric(lrc?.tlyric?.lyric || ''),
+    romalyric: parseLyric(lrc?.romalrc?.lyric || ''),
     lyricuser: lrc.lyricUser,
     transuser: lrc.transUser,
   };
 }
 
 // regexr.com/6e52n
-const extractLrcRegex = /^(?<lyricTimestamps>(?:\[.+?\])+)(?!\[)(?<content>.+)$/gm;
-const extractTimestampRegex = /\[(?<min>\d+):(?<sec>\d+)(?:\.|:)(?<ms>\d+)\]/g;
+const extractLrcRegex =
+  /^(?<lyricTimestamps>(?:\[.+?\])+)(?!\[)(?<content>.+)$/gm;
+const extractTimestampRegex =
+  /\[(?<min>\d+):(?<sec>\d+)(?:\.|:)*(?<ms>\d+)*\]/g;
 
 /**
  * @typedef {{time: number, rawTime: string, content: string}} ParsedLyric
@@ -62,7 +65,7 @@ function parseLyric(lrc) {
     for (const timestamp of lyricTimestamps.matchAll(extractTimestampRegex)) {
       const { min, sec, ms } = timestamp.groups;
       const rawTime = timestamp[0];
-      const time = Number(min) * 60 + Number(sec) + 0.001 * Number(ms);
+      const time = Number(min) * 60 + Number(sec) + Number(ms ?? 0) * 0.001;
 
       /** @type {ParsedLyric} */
       const parsedLyric = { rawTime, time, content: trimContent(content) };
